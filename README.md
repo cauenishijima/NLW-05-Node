@@ -214,6 +214,7 @@
   ```
 
 24. Por fim vamos refatorar um pouco nosso código criando uma camada de controller, para isso vamos criar um diretório **controllers** dentro de **src** e dentro dele criar um arquivo **SettingsController.ts** e vamos transportar todo código da nossa rota */settings* para esse novo controller, ficando assim:
+
   *SettingsController.ts*: 
   ```ts
     import { Request, Response } from 'express'
