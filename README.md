@@ -138,46 +138,87 @@
     "emitDecoratorMetadata": true, 
   ```
 
-  17. Agora vamos delegar a responsabilidade da geração do *id* para nossa aplicação, não deixaremos essa responsabilidade para o banco, pois o mesmo pode variar de banco para banco. Para isso vamos efetuar a instalação da biblioteca **uuid** e do seu pacote de tipagem **@types/uuid -D**:
+17. Agora vamos delegar a responsabilidade da geração do *id* para nossa aplicação, não deixaremos essa responsabilidade para o banco, pois o mesmo pode variar de banco para banco. Para isso vamos efetuar a instalação da biblioteca **uuid** e do seu pacote de tipagem **@types/uuid -D**:
   
-  18. De volta ao arquivo **Setting.ts** vamos fazer a importação da biblioteca **uuid** e criar um construtor para que seja atribuído um código *uuid* a propriedade *id*: 
-    ```ts
-      import { v4 as uuid } from 'uuid';
+18. De volta ao arquivo **Setting.ts** vamos fazer a importação da biblioteca **uuid** e criar um construtor para que seja atribuído um código *uuid* a propriedade *id*: 
+  ```ts
+    import { v4 as uuid } from 'uuid';
 
-        constructor() {
-          if (!this.id) {
-            this.id = uuid();
-          }
+      constructor() {
+        if (!this.id) {
+          this.id = uuid();
         }
-    ``` 
+      }
+  ``` 
 
-  19. Agora temos que informar ao *typeorm* onde estão nossa entidades, para isso temos que adicionar as seguintes linhas no arquivo **ormconfig.json**: 
-    ```json
-      "entities": ["./src/entities/*.ts"]
-    ```
+19. Agora temos que informar ao *typeorm* onde estão nossa entidades, para isso temos que adicionar as seguintes linhas no arquivo **ormconfig.json**: 
+  ```json
+    "entities": ["./src/entities/*.ts"]
+  ```
 
-  20. Vamos começar a criar nossos repositórios, para primeiro vamos criar um diretório **repositories**, dentro de **src**, que irá conter todos os nossos repositórios.
+20. Vamos começar a criar nossos repositórios, para primeiro vamos criar um diretório **repositories**, dentro de **src**, que irá conter todos os nossos repositórios.
 
-  21. Dentro dele vamos criar um arquivo chamado **SettingsRepository.ts**, com o seguinte conteúdo: 
-    ```ts
-      import { EntityRepository, Repository } from 'typeorm'
-      import { Setting } from '../entities/Setting';
+21. Dentro dele vamos criar um arquivo chamado **SettingsRepository.ts**, com o seguinte conteúdo: 
+  ```ts
+    import { EntityRepository, Repository } from 'typeorm'
+    import { Setting } from '../entities/Setting';
 
-      @EntityRepository(Setting)
-      class SettingsRepository extends Repository<Setting> {}
+    @EntityRepository(Setting)
+    class SettingsRepository extends Repository<Setting> {}
 
-      export default SettingsRepository;
-    ```
+    export default SettingsRepository;
+  ```
 
-  22. Agora vamos criar nosso arquivo de rotas dentro da pasta **src** com o nome de **routes.ts** e que irá conter a nossa primeira rota: 
-    ```ts
-      import { Router } from 'express';
-      import { getCustomRepository } from 'typeorm';
-      import SettingsRepository from './repositories/SettingsRepository';
+22. Agora vamos criar nosso arquivo de rotas dentro da pasta **src** com o nome de **routes.ts** e que irá conter a nossa primeira rota: 
+  ```ts
+    import { Router } from 'express';
+    import { getCustomRepository } from 'typeorm';
+    import SettingsRepository from './repositories/SettingsRepository';
 
-      const routes = Router();
+    const routes = Router();
 
-      routes.post('/settings', async (request, response) => {
+    routes.post('/settings', async (request, response) => {
+      const { chat, username } = request.body;
+
+      const settingsRepository = getCustomRepository(SettingsRepository);
+
+      const settings = settingsRepository.create({
+        chat,
+        username
+      })
+
+      await settingsRepository.save(settings);
+
+      return response.json(settings);
+    })
+
+    export default routes; 
+  ```
+
+23. Após a criação do arquivo de rotas, vamos apagar a rota que criamos para teste no arquivo **server.ts** e vamos importar o arquivo de rotas, além disso vamos dizer ao express que as requisições virão em formato JSON, o arquivo **server.ts** ficará assim:
+  ```ts
+    import express from 'express';
+    import './database';
+    import routes from './routes';
+
+    const app = express();
+
+    app.use(express.json());
+    app.use(routes);
+
+    app.listen(3333, () => console.log('Server is running on port 3333'))   
+  ```
+
+24. Por fim vamos refatorar um pouco nosso código criando uma camada de controller, para isso vamos criar um diretório **controllers** dentro de **src** e dentro dele criar um arquivo **SettingsController.ts** e vamos transportar todo código da nossa rota */settings* para esse novo controller, ficando assim:
+  *SettingsController.ts*: 
+  ```ts
+    import { Request, Response } from 'express'
+    import { getCustomRepository } from 'typeorm';
+    import SettingsRepository from '../repositories/SettingsRepository';
+
+    class SettingsController {
+
+      async create(request: Request, response: Response) {
         const { chat, username } = request.body;
 
         const settingsRepository = getCustomRepository(SettingsRepository);
@@ -190,62 +231,21 @@
         await settingsRepository.save(settings);
 
         return response.json(settings);
-      })
-
-      export default routes; 
-    ```
-  
-  23. Após a criação do arquivo de rotas, vamos apagar a rota que criamos para teste no arquivo **server.ts** e vamos importar o arquivo de rotas, além disso vamos dizer ao express que as requisições virão em formato JSON, o arquivo **server.ts** ficará assim:
-    ```ts
-      import express from 'express';
-      import './database';
-      import routes from './routes';
-
-      const app = express();
-
-      app.use(express.json());
-      app.use(routes);
-
-      app.listen(3333, () => console.log('Server is running on port 3333'))   
-    ```
-
-  24. Por fim vamos refatorar um pouco nosso código criando uma camada de controller, para isso vamos criar um diretório **controllers** dentro de **src** e dentro dele criar um arquivo **SettingsController.ts** e vamos transportar todo código da nossa rota */settings* para esse novo controller, ficando assim:
-    *SettingsController.ts*: 
-    ```ts
-      import { Request, Response } from 'express'
-      import { getCustomRepository } from 'typeorm';
-      import SettingsRepository from '../repositories/SettingsRepository';
-
-      class SettingsController {
-
-        async create(request: Request, response: Response) {
-          const { chat, username } = request.body;
-
-          const settingsRepository = getCustomRepository(SettingsRepository);
-
-          const settings = settingsRepository.create({
-            chat,
-            username
-          })
-
-          await settingsRepository.save(settings);
-
-          return response.json(settings);
-        }
       }
+    }
 
-      export default SettingsController;  
-    ```
+    export default SettingsController;  
+  ```
 
-    *routes.ts*:
-    ```ts
-      import { Router } from 'express';
-      import SettingsController from './controllers/SettingsController';
+  *routes.ts*:
+  ```ts
+    import { Router } from 'express';
+    import SettingsController from './controllers/SettingsController';
 
-      const routes = Router();
-      const settingsController = new SettingsController();
+    const routes = Router();
+    const settingsController = new SettingsController();
 
-      routes.post('/settings', settingsController.create)
+    routes.post('/settings', settingsController.create)
 
-      export default routes; 
-    ``` 
+    export default routes; 
+  ``` 
