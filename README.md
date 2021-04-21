@@ -144,12 +144,11 @@
     ```ts
       import { v4 as uuid } from 'uuid';
 
-      constructor() {
-        if (!this.id) {
-          this.id = uuid();
+        constructor() {
+          if (!this.id) {
+            this.id = uuid();
+          }
         }
-      }
-
     ``` 
 
   19. Agora temos que informar ao *typeorm* onde estão nossa entidades, para isso temos que adicionar as seguintes linhas no arquivo **ormconfig.json**: 
