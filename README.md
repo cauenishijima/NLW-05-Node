@@ -142,11 +142,10 @@
     ```console
       yarn add uuid
       yarn add @types/uuid -D
-    ``` 
+    ```
   
   18. De volta ao arquivo **Setting.ts** vamos fazer a importação da biblioteca **uuid** e criar um construtor para que seja atribuído um código *uuid* a propriedade *id*: 
     ```ts
-
       import { v4 as uuid } from 'uuid';
 
       constructor() {
