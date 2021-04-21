@@ -139,7 +139,7 @@
   ```
 
 17. Agora vamos delegar a responsabilidade da geração do *id* para nossa aplicação, não deixaremos essa responsabilidade para o banco, pois o mesmo pode variar de banco para banco. Para isso vamos efetuar a instalação da biblioteca **uuid** e do seu pacote de tipagem **@types/uuid -D**:
-  ```bash
+  ```zsh
     yarn add uuid
     yarn add @types/uuid -D
   ```
