@@ -146,15 +146,15 @@
   
   18. De volta ao arquivo **Setting.ts** vamos fazer a importação da biblioteca **uuid** e criar um construtor para que seja atribuído um código *uuid* a propriedade *id*: 
     ```ts
-      /* ... importação já existente*/
+
       import { v4 as uuid } from 'uuid';
-      /* ... código da classe já existente */
+
       constructor() {
         if (!this.id) {
           this.id = uuid();
         }
       }
-      /* ... exportação da classe*/
+
     ``` 
 
   19. Agora temos que informar ao *typeorm* onde estão nossa entidades, para isso temos que adicionar as seguintes linhas no arquivo **ormconfig.json**: 
